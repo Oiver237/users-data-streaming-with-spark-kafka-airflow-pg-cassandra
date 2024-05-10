@@ -15,19 +15,19 @@ def create_keyspace(session):
 
 def create_table(session):
     session.execute("""
-            CREATE TABLE IF NOT EXIST spark_streams.created_users (
-                id UUID PRIMARY KEY,
-                first_name TEXT,
-                last_name TEXT,
-                gender TEXT,
-                address TEXT,
-                post_code TEXT,
-                email TEXT,
-                username TEXT,
-                dob TEXT,
-                registered_date TEXT,
-                phone TEXT,
-                picture TEXT);
+        CREATE TABLE IF NOT EXIST spark_streams.created_users (
+            id UUID PRIMARY KEY,
+            first_name TEXT,
+            last_name TEXT,
+            gender TEXT,
+            address TEXT,
+            post_code TEXT,
+            email TEXT,
+            username TEXT,
+            dob TEXT,
+            registered_date TEXT,
+            phone TEXT,
+            picture TEXT);
         """)
     print('Table created successfully!')
 
@@ -54,7 +54,7 @@ def insert_data(session, **kwargs):
             email, username, dob, registered_date, phone, picture)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (user_id, first_name, last_name, gender, address, post_code,
-              email, username, dob, registered_date, phone, picture))
+            email, username, dob, registered_date, phone, picture))
         logging.info(f'Data inserted successfully for {first_name} {last_name}!')
     except Exception as e:
         logging.error(f'Data insertion failed due to exception {e}.')
@@ -65,8 +65,9 @@ def create_spark_connection():
     try:
         s_conn = SparkSession.builder \
             .appName('SparkDataStreaming') \
-            .config('spark.jars.packages', "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
-                                           "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1") \
+            .config('spark.jars.packages', 
+                    "com.datastax.spark:spark-cassandra-connector_2.13:3.4.1,"
+                    "org.apache.spark:spark-sql-kafka-0-10_2.13:3.4.1") \
             .config('spark.cassandra.connection.host', 'localhost') \
             .getOrCreate()
 
@@ -143,10 +144,11 @@ if __name__ == '__main__':
 
             logging.info('Streaming is being started...')
 
-            streaming_query = (selection_df.writeStream.format("org.apache.spark.sql.cassandra")
-                               .option('checkpointLocation', '/tmp/checkpoint')
-                               .option('keyspace', 'spark_streams')
-                               .option('table', 'created_users')
-                               .start())
+            streaming_query = (
+                selection_df.writeStream.format("org.apache.spark.sql.cassandra")
+                .option('checkpointLocation', '/tmp/checkpoint')
+                .option('keyspace', 'spark_streams')
+                .option('table', 'created_users')
+                .start())
 
             streaming_query.awaitTermination()
